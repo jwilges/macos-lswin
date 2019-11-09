@@ -1,5 +1,8 @@
 .vscode
-.venv
+.tox
+.pytest_cache
+.coverage
 
 __pycache__
 *.py[cdo]
+*.egg-info
