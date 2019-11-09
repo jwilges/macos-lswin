@@ -12,6 +12,7 @@
 			"**/.tox": true,
 			"**/.pytest_cache": true,
 			"**/.coverage": true,
+			"**/coverage.xml": true,
 			"**/__pycache__": true,
 			"**/*.egg-info": true
 		},

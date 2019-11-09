@@ -1,0 +1,115 @@
+version: 2.1
+
+jobs:
+  test:
+    docker:
+      - image: circleci/python:3.8.0
+    working_directory: ~/build
+    steps:
+      - checkout
+      - tox-test:
+          package: lswin
+          enable-requirements-cache: true
+  coverage:
+    docker:
+      - image: circleci/python:3.8.0
+    working_directory: ~/build
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/_ws
+      - run:
+          name: Set CI environment variables
+          command: |
+            echo 'export PATH="~/.local/bin:$PATH"' >> $BASH_ENV
+      - restore_cache:
+          name: Restore CI dependencies from cache
+          keys:
+            - lswin-{{ .Branch }}-v0-python-codecov
+      - run:
+          name: Install codecov
+          command: |
+            pip install --user codecov
+      - save_cache:
+          name: Save CI dependencies to cache
+          paths:
+            - "~/.local/bin"
+          key: lswin-{{ .Branch }}-v0-python-codecov
+      - run:
+          name: Retrieve coverage report for upload
+          command: |
+            cp /tmp/_ws/.coverage .coverage
+            cp /tmp/_ws/coverage.xml coverage.xml
+      - store_artifacts:
+          path: coverage.xml
+          destination: coverage.xml
+      - run:
+          name: Upload report to codecov
+          command: |
+            codecov -t $CODECOV_TOKEN
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test
+      - coverage:
+          requires:
+            - test
+
+commands:
+  tox-test:
+    description: "Execute Python tests within a tox virtual environment"
+    parameters:
+      package:
+        type: string
+      enable-requirements-cache:
+        type: boolean
+        default: false
+    steps:
+      - run:
+          name: Set CI environment variables
+          command: |
+            echo 'export PATH="~/.local/bin:$PATH"' >> $BASH_ENV
+      - restore_cache:
+          name: Restore CI dependencies from cache
+          keys:
+            - << parameters.package >>-{{ .Branch }}-v0-python-user-packages
+      - when:
+          condition: << parameters.enable-requirements-cache >>
+          steps:
+            - restore_cache:
+                name: Restore package-specific dependencies from cache
+                keys:
+                  - << parameters.package >>-{{ .Branch }}-v0-dependencies-{{ checksum "tox.ini" }}{{ checksum "setup.py" }}
+      - run:
+          name: Install tox
+          command: |
+            pip install --user --upgrade tox==3.14.0 tox-venv==0.4.0
+      - save_cache:
+          name: Save CI dependencies to cache
+          paths:
+            - "~/.local/bin"
+          key: << parameters.package >>-{{ .Branch }}-v0-python-user-packages
+      - when:
+          condition: << parameters.enable-requirements-cache >>
+          steps:
+            - save_cache:
+                name: Saving package-specific dependencies to cache
+                paths:
+                  - ".tox"
+                key: << parameters.package >>-{{ .Branch }}-v0-dependencies-{{ checksum "tox.ini" }}{{ checksum "setup.py" }}
+      - run:
+          name: Run unit tests
+          command: |
+            tox -e coverage-xml -- --junitxml="test-reports/junit.xml"
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ".coverage"
+            - "coverage.xml"
+      - store_test_results:
+          path: test-reports
+      - store_artifacts:
+          path: test-reports
+          destination: test-reports
