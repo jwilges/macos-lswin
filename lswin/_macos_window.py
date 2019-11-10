@@ -39,6 +39,6 @@ class Window:
             yield cls(window)
 
     @classmethod
-    def sort(cls, windows: Iterable[Window]):
+    def sort(cls, windows: Iterable[Window]) -> Iterable[Window]:
         '''Return windows sorted by `owner_pid`, `number` ascending'''
         return sorted(windows, key=lambda w: (w.owner_pid, w.number))
