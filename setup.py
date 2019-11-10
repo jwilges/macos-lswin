@@ -33,6 +33,7 @@ setuptools.setup(
     long_description=LONG_DESCRIPTION,
     long_description_content_type='text/markdown',
     url='https://github.com/jwilges/macos-lswin',
+    license='BSD',
     packages=[
         'lswin',
     ],
@@ -42,11 +43,13 @@ setuptools.setup(
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Environment :: Console',
+        'License :: OSI Approved :: BSD License',
         'Operating System :: MacOS :: MacOS X',
         'Programming Language :: Python :: 3',
         'Topic :: Utilities'
     ],
     install_requires=[
         'pyobjc-framework-Quartz==6.1 ; platform_system=="Darwin"'
-    ]
+    ],
+    python_requires='>=3.6',
 )
