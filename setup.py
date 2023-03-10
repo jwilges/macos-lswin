@@ -49,7 +49,7 @@ setuptools.setup(
         'Topic :: Utilities'
     ],
     install_requires=[
-        'pyobjc-framework-Quartz==6.1 ; platform_system=="Darwin"'
+        'pyobjc-framework-Quartz==9.0.1 ; platform_system=="Darwin"'
     ],
     python_requires='>=3.6',
 )
